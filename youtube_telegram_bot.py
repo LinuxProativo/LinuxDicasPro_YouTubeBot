@@ -92,6 +92,26 @@ def main():
         return
 
     last_video = load_last_video()
+
+    if last_video is None:
+        print("[DEBUG] Primeira execução detectada. Enviando apenas o vídeo mais recente.")
+        entry = feed.entries[0]
+        video_id = entry.yt_videoid
+
+        # Opcional: Verifica se o primeiríssimo vídeo é uma estreia
+        if is_premiere(video_id):
+            print(f"[DEBUG] O vídeo mais recente é uma estreia ({video_id}). Nada a enviar agora.")
+            # Você pode escolher salvar o ID mesmo assim para marcar o ponto de partida
+            save_last_video(video_id)
+            return
+
+        # Envia apenas este primeiro vídeo
+        msg = f"🎥 Novo vídeo no canal!\n{entry.title}\n{entry.link}"
+        if send_telegram_message(msg):
+            save_last_video(video_id)
+            print(f"[DEBUG] Primeiro vídeo registrado e enviado: {entry.title}")
+        return
+
     new_videos = []
 
     for entry in feed.entries:
